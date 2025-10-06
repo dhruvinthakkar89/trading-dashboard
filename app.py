@@ -440,11 +440,12 @@ def admin_manage_clients_page():
         with col2:
             password = st.text_input("Password", type="password")
             starting_capital = st.number_input("Starting Capital ($)", min_value=0.0, value=10000.0)
+            investment_start_date = st.date_input("Investment Start Date", value=None, help="Date when the client's investment period begins")
         
         if st.form_submit_button("Create Client"):
             if username and password and name and starting_capital > 0:
                 success = st.session_state.auth_manager.create_client(
-                    username, password, name, email, starting_capital
+                    username, password, name, email, starting_capital, investment_start_date
                 )
                 if success:
                     # Refresh data manager to sync with auth manager
