@@ -1089,8 +1089,8 @@ def admin_strategy_analysis_page():
             st.metric("Avg Loss %", f"{summary['avg_loser_pct']:.2f}%")
         
         with col4:
-            st.metric("Total P&L", f"${summary['total_pl']:,.2f}")
-            st.metric("Total Position Size", f"${summary['total_position_size']:,.2f}")
+            # Column 4 is now empty - metrics removed as requested
+            pass
         
         # S&P 500 comparison toggle
         st.markdown("---")
