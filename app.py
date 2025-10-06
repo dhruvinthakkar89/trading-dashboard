@@ -794,8 +794,8 @@ def admin_capital_accounts_page():
                     if client_capital['biweekly_breakdown']:
                             st.write("**Biweekly Performance Analysis**")
                             
-                        biweekly_df = pd.DataFrame(client_capital['biweekly_breakdown'])
-                        
+                            biweekly_df = pd.DataFrame(client_capital['biweekly_breakdown'])
+                            
                             # Calculate cumulative profits (only from trading, not contributions)
                             # Profit for each period = ending_capital - capital_after_contributions
                             biweekly_df['period_profit'] = biweekly_df['ending_capital'] - biweekly_df['capital_after_contributions']
@@ -825,48 +825,48 @@ def admin_capital_accounts_page():
                             )
                             
                             st.plotly_chart(fig1, use_container_width=True)
-                        else:
-                            # Fallback to monthly view if no biweekly data
-                            st.write("**Monthly Capital Growth (Normalized to Starting Capital)**")
-                            
-                            # Calculate normalized capital (starting from 100%)
-                            monthly_df['normalized_capital'] = (monthly_df['ending_capital'] / monthly_df['starting_capital'].iloc[0] * 100).round(2)
-                            monthly_df['capital_growth_pct'] = monthly_df['normalized_capital'] - 100
-                            
-                            # Create dual-axis chart showing both absolute capital and normalized growth
-                            fig = go.Figure()
-                            
-                            # Add normalized capital line
-                            fig.add_trace(go.Scatter(
-                                x=monthly_df['month'],
-                                y=monthly_df['normalized_capital'],
-                                mode='lines+markers',
-                                name='Capital Growth (%)',
-                                line=dict(color='blue', width=3),
-                                marker=dict(size=8),
-                                yaxis='y'
-                            ))
-                            
-                            # Add monthly returns as bars
-                            fig.add_trace(go.Bar(
-                                x=monthly_df['month'],
-                                y=monthly_df['monthly_return_pct'],
-                                name='Monthly Returns (%)',
-                                marker_color=['green' if x >= 0 else 'red' for x in monthly_df['monthly_return_pct']],
-                                opacity=0.6,
-                                yaxis='y2'
-                            ))
-                            
-                            fig.update_layout(
-                                title=f"Capital Growth vs Monthly Returns - {client_info['name']}",
-                                xaxis_title="Month",
-                                yaxis=dict(title="Capital Growth (%)", side="left"),
-                                yaxis2=dict(title="Monthly Returns (%)", side="right", overlaying="y"),
-                                hovermode='x unified',
-                                legend=dict(x=0.02, y=0.98)
-                            )
-                            
-                            st.plotly_chart(fig, use_container_width=True)
+                    else:
+                        # Fallback to monthly view if no biweekly data
+                        st.write("**Monthly Capital Growth (Normalized to Starting Capital)**")
+                        
+                        # Calculate normalized capital (starting from 100%)
+                        monthly_df['normalized_capital'] = (monthly_df['ending_capital'] / monthly_df['starting_capital'].iloc[0] * 100).round(2)
+                        monthly_df['capital_growth_pct'] = monthly_df['normalized_capital'] - 100
+                        
+                        # Create dual-axis chart showing both absolute capital and normalized growth
+                        fig = go.Figure()
+                        
+                        # Add normalized capital line
+                        fig.add_trace(go.Scatter(
+                            x=monthly_df['month'],
+                            y=monthly_df['normalized_capital'],
+                            mode='lines+markers',
+                            name='Capital Growth (%)',
+                            line=dict(color='blue', width=3),
+                            marker=dict(size=8),
+                            yaxis='y'
+                        ))
+                        
+                        # Add monthly returns as bars
+                        fig.add_trace(go.Bar(
+                            x=monthly_df['month'],
+                            y=monthly_df['monthly_return_pct'],
+                            name='Monthly Returns (%)',
+                            marker_color=['green' if x >= 0 else 'red' for x in monthly_df['monthly_return_pct']],
+                            opacity=0.6,
+                            yaxis='y2'
+                        ))
+                        
+                        fig.update_layout(
+                            title=f"Capital Growth vs Monthly Returns - {client_info['name']}",
+                            xaxis_title="Month",
+                            yaxis=dict(title="Capital Growth (%)", side="left"),
+                            yaxis2=dict(title="Monthly Returns (%)", side="right", overlaying="y"),
+                            hovermode='x unified',
+                            legend=dict(x=0.02, y=0.98)
+                        )
+                        
+                        st.plotly_chart(fig, use_container_width=True)
                         
                 else:
                     st.info("No capital progression data available yet.")
@@ -898,17 +898,17 @@ def admin_configuration_page():
         config = data_manager.get_config()
         
         with st.form("update_global_config"):
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            tax_rate = st.slider(
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                tax_rate = st.slider(
                     "Default Tax Rate (%)",
-                min_value=0.0,
-                max_value=50.0,
-                value=config['tax_rate'] * 100,
+                    min_value=0.0,
+                    max_value=50.0,
+                    value=config['tax_rate'] * 100,
                     step=1.0,
                     key="global_tax_rate"
-            )
+                )
         
         with col2:
             trader_share = st.slider(
@@ -924,10 +924,10 @@ def admin_configuration_page():
                 success = data_manager.update_config(
                 tax_rate / 100, trader_share / 100
             )
-            if success:
+                if success:
                     st.success("Global configuration updated successfully!")
-                st.rerun()
-            else:
+                    st.rerun()
+                else:
                     st.error("Failed to update global configuration")
         
         # Display current global configuration
@@ -984,44 +984,44 @@ def admin_configuration_page():
                 )
     
     col1, col2, col3 = st.columns(3)
-            with col1:
-                if st.form_submit_button("Set Monthly Capital"):
-                    if capital_amount > 0:
-                        # Add or update monthly capital
-                        success = data_manager.set_monthly_capital(month_year, capital_amount)
-                        if success:
-                            st.success(f"Monthly capital set to ${capital_amount:,.2f} for {month_year}")
-                            st.rerun()
-                        else:
-                            st.error("Failed to set monthly capital")
-                    else:
-                        st.error("Please enter a valid capital amount")
-            
-            with col2:
-                if st.form_submit_button("Delete Monthly Capital"):
-                    if current_capital > 0:
-                        # Delete monthly capital entry
-                        success = data_manager.delete_monthly_capital(month_year)
-                        if success:
-                            st.success(f"Monthly capital deleted for {month_year}")
-                            st.rerun()
-                        else:
-                            st.error("Failed to delete monthly capital")
-                    else:
-                        st.error("No capital set for this month")
-            
-            with col3:
-                if st.form_submit_button("Reset to Default"):
-                    if current_capital > 0:
-                        # Delete monthly capital entry to use default calculation
-                        success = data_manager.delete_monthly_capital(month_year)
-                        if success:
-                            st.success(f"Monthly capital reset to default calculation for {month_year}")
-                            st.rerun()
-                        else:
-                            st.error("Failed to reset monthly capital")
-                    else:
-                        st.info("Already using default calculation")
+    with col1:
+        if st.form_submit_button("Set Monthly Capital"):
+            if capital_amount > 0:
+                # Add or update monthly capital
+                success = data_manager.set_monthly_capital(month_year, capital_amount)
+                if success:
+                    st.success(f"Monthly capital set to ${capital_amount:,.2f} for {month_year}")
+                    st.rerun()
+                else:
+                    st.error("Failed to set monthly capital")
+            else:
+                st.error("Please enter a valid capital amount")
+    
+    with col2:
+        if st.form_submit_button("Delete Monthly Capital"):
+            if current_capital > 0:
+                # Delete monthly capital entry
+                success = data_manager.delete_monthly_capital(month_year)
+                if success:
+                    st.success(f"Monthly capital deleted for {month_year}")
+                    st.rerun()
+                else:
+                    st.error("Failed to delete monthly capital")
+            else:
+                st.error("No capital set for this month")
+    
+    with col3:
+        if st.form_submit_button("Reset to Default"):
+            if current_capital > 0:
+                # Delete monthly capital entry to use default calculation
+                success = data_manager.delete_monthly_capital(month_year)
+                if success:
+                    st.success(f"Monthly capital reset to default calculation for {month_year}")
+                    st.rerun()
+                else:
+                    st.error("Failed to reset monthly capital")
+            else:
+                st.info("Already using default calculation")
         
         # Show current monthly capital settings
         if not data_manager.monthly_capital_df.empty:
@@ -1081,26 +1081,26 @@ def admin_configuration_page():
                         key="client_trader_share"
                     )
                 
-                col1, col2 = st.columns(2)
-                with col1:
-                    if st.form_submit_button("Update Client Configuration"):
-                        success = data_manager.update_config(
-                            tax_rate / 100, trader_share / 100, selected_client
-                        )
-                        if success:
-                            st.success(f"Configuration updated successfully for {client_info['name']}!")
-                            st.rerun()
-                        else:
-                            st.error("Failed to update client configuration")
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        if st.form_submit_button("Update Client Configuration"):
+                            success = data_manager.update_config(
+                                tax_rate / 100, trader_share / 100, selected_client
+                            )
+                            if success:
+                                st.success(f"Configuration updated successfully for {client_info['name']}!")
+                                st.rerun()
+                            else:
+                                st.error("Failed to update client configuration")
                 
-                with col2:
-                    if st.form_submit_button("Reset to Global Settings"):
-                        # Remove client-specific config to use global defaults
-                        if selected_client in data_manager.config.get('clients', {}):
-                            del data_manager.config['clients'][selected_client]
-                            data_manager._save_config()
-                            st.success(f"Reset to global settings for {client_info['name']}!")
-                            st.rerun()
+                    with col2:
+                        if st.form_submit_button("Reset to Global Settings"):
+                            # Remove client-specific config to use global defaults
+                            if selected_client in data_manager.config.get('clients', {}):
+                                del data_manager.config['clients'][selected_client]
+                                data_manager._save_config()
+                                st.success(f"Reset to global settings for {client_info['name']}!")
+                                st.rerun()
             
             # Display current client configuration
             st.subheader(f"📋 Current Configuration for {client_info['name']}")
@@ -1112,7 +1112,7 @@ def admin_configuration_page():
             with col2:
                 st.metric("Trader Share", f"{client_config['trader_share']*100:.1f}%")
     
-    with col3:
+            with col3:
                 st.metric("Investor Share", f"{client_config['investor_share']*100:.1f}%")
             
             # Show if using global or custom settings
@@ -1268,10 +1268,10 @@ def admin_strategy_analysis_page():
                 # If S&P 500 data is not available, show original columns
                 display_columns = ['Month', 'Total_Trades', 'Win_Rate', 'Avg_Win_Pct', 'Avg_Loss_Pct', 'Return_Pct', 'Cumulative_Return']
             monthly_display_df = monthly_returns[display_columns]
-                monthly_display_df = monthly_display_df.rename(columns={
-                    'Return_Pct': 'Strategy_Return_Pct',
-                    'Cumulative_Return': 'Strategy_Cumulative_Return'
-                })
+            monthly_display_df = monthly_display_df.rename(columns={
+                'Return_Pct': 'Strategy_Return_Pct',
+                'Cumulative_Return': 'Strategy_Cumulative_Return'
+            })
             
             st.dataframe(monthly_display_df, use_container_width=True)
             
@@ -1316,15 +1316,15 @@ def admin_strategy_analysis_page():
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 # Fallback to strategy-only chart if S&P 500 data is not available
-            fig = px.line(
-                monthly_returns,
-                x='Month',
-                y='Return_Pct',
-                title="Monthly Strategy Returns (%)",
-                markers=True,
-                line_shape='spline'
-            )
-            st.plotly_chart(fig, use_container_width=True)
+                fig = px.line(
+                    monthly_returns,
+                    x='Month',
+                    y='Return_Pct',
+                    title="Monthly Strategy Returns (%)",
+                    markers=True,
+                    line_shape='spline'
+                )
+                st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("No trades uploaded yet. Please upload a trade log first.")
 
@@ -1415,11 +1415,11 @@ def client_capital_account_page():
                 monthly_df = pd.DataFrame(client_capital['monthly_breakdown'])
                 
                 # Create two separate simple charts if biweekly data is available
-            if client_capital['biweekly_breakdown']:
+                if client_capital['biweekly_breakdown']:
                     st.write("**Biweekly Performance Analysis**")
                     
-                biweekly_df = pd.DataFrame(client_capital['biweekly_breakdown'])
-                
+                    biweekly_df = pd.DataFrame(client_capital['biweekly_breakdown'])
+                    
                     # Calculate cumulative profits (only from trading, not contributions)
                     # Profit for each period = ending_capital - capital_after_contributions
                     biweekly_df['period_profit'] = biweekly_df['ending_capital'] - biweekly_df['capital_after_contributions']
@@ -1490,12 +1490,12 @@ def client_capital_account_page():
                         legend=dict(x=0.02, y=0.98)
                     )
                     
-            st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True)
             
-    else:
-            st.info("No capital progression data available yet.")
-    else:
-        st.error("Unable to load capital account information.")
+            else:
+                st.info("No capital progression data available yet.")
+        else:
+            st.error("Unable to load capital account information.")
 
 def client_strategy_summary_page():
     """Client page for viewing strategy analysis - redirects to admin strategy analysis"""
