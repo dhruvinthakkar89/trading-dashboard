@@ -19,6 +19,56 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Hide GitHub repository information and other Streamlit branding
+st.markdown("""
+<style>
+    /* Hide GitHub repository information and Streamlit branding */
+    .stApp > header {
+        display: none !important;
+    }
+    
+    /* Hide the GitHub link in the top right */
+    div[data-testid="stDecoration"] {
+        display: none !important;
+    }
+    
+    /* Hide any GitHub-related elements */
+    a[href*="github.com"] {
+        display: none !important;
+    }
+    
+    /* Hide Streamlit branding in footer */
+    .stApp > footer {
+        display: none !important;
+    }
+    
+    /* Hide the hamburger menu that might show GitHub info */
+    .stApp > div[data-testid="stToolbar"] {
+        display: none !important;
+    }
+    
+    /* Hide the main menu button that might contain GitHub info */
+    .stApp > div[data-testid="stHeader"] {
+        display: none !important;
+    }
+    
+    /* Hide any elements with GitHub in the class name or ID */
+    [class*="github"], [id*="github"] {
+        display: none !important;
+    }
+    
+    /* Hide the Streamlit logo and branding */
+    .stApp > div[data-testid="stSidebar"] > div:first-child {
+        display: none !important;
+    }
+    
+    /* Additional hiding for any remaining GitHub elements */
+    iframe[src*="github"] {
+        display: none !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # Initialize authentication and data manager
 init_auth()
 
@@ -1274,35 +1324,34 @@ def admin_strategy_analysis_page():
             
             st.dataframe(monthly_display_df, use_container_width=True)
             
-            # Combined Chart - Strategy vs S&P 500 Monthly Returns
+            # Combined Chart - Strategy vs S&P 500 Monthly Returns (Side-by-Side Bar Chart)
             if not sp500_returns.empty:
-                # Create combined chart with both strategy and S&P 500 returns
+                # Create side-by-side bar chart with both strategy and S&P 500 returns
                 fig = go.Figure()
                 
-                # Add strategy returns line
-                fig.add_trace(go.Scatter(
+                # Add strategy returns bars
+                fig.add_trace(go.Bar(
                     x=monthly_returns['Month'],
                     y=monthly_returns['Return_Pct'],
-                    mode='lines+markers',
                     name='Strategy Returns',
-                    line=dict(color='blue', shape='spline'),
-                    marker=dict(size=6)
+                    marker_color='blue',
+                    opacity=0.8
                 ))
                 
-                # Add S&P 500 returns line
-                fig.add_trace(go.Scatter(
+                # Add S&P 500 returns bars
+                fig.add_trace(go.Bar(
                     x=monthly_returns_with_sp500['Month'],
                     y=monthly_returns_with_sp500['SP500_Return_Pct'],
-                    mode='lines+markers',
                     name='S&P 500 Returns',
-                    line=dict(color='red', shape='spline'),
-                    marker=dict(size=6)
+                    marker_color='red',
+                    opacity=0.8
                 ))
                 
                 fig.update_layout(
                     title="Monthly Returns Comparison: Strategy vs S&P 500 (%)",
                     xaxis_title="Month",
                     yaxis_title="Return Percentage (%)",
+                    barmode='group',  # This creates side-by-side bars
                     hovermode='x unified',
                     legend=dict(
                         yanchor="top",
@@ -1314,15 +1363,25 @@ def admin_strategy_analysis_page():
                 
                 st.plotly_chart(fig, use_container_width=True)
             else:
-                # Fallback to strategy-only chart if S&P 500 data is not available
-                fig = px.line(
-                    monthly_returns,
-                    x='Month',
-                    y='Return_Pct',
+                # Fallback to strategy-only bar chart if S&P 500 data is not available
+                fig = go.Figure()
+                
+                # Add strategy returns bars
+                fig.add_trace(go.Bar(
+                    x=monthly_returns['Month'],
+                    y=monthly_returns['Return_Pct'],
+                    name='Strategy Returns',
+                    marker_color='blue',
+                    opacity=0.8
+                ))
+                
+                fig.update_layout(
                     title="Monthly Strategy Returns (%)",
-                    markers=True,
-                    line_shape='spline'
+                    xaxis_title="Month",
+                    yaxis_title="Return Percentage (%)",
+                    hovermode='x unified'
                 )
+                
                 st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("No trades uploaded yet. Please upload a trade log first.")
