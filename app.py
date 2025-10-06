@@ -909,21 +909,21 @@ def admin_configuration_page():
                     step=1.0,
                     key="global_tax_rate"
                 )
-        
-        with col2:
-            trader_share = st.slider(
+            
+            with col2:
+                trader_share = st.slider(
                     "Default Trader Share (%)",
-                min_value=0.0,
-                max_value=100.0,
-                value=config['trader_share'] * 100,
+                    min_value=0.0,
+                    max_value=100.0,
+                    value=config['trader_share'] * 100,
                     step=5.0,
                     key="global_trader_share"
-            )
-        
+                )
+            
             if st.form_submit_button("Update Global Configuration"):
                 success = data_manager.update_config(
-                tax_rate / 100, trader_share / 100
-            )
+                    tax_rate / 100, trader_share / 100
+                )
                 if success:
                     st.success("Global configuration updated successfully!")
                     st.rerun()
@@ -943,9 +943,9 @@ def admin_configuration_page():
         with col3:
             st.metric("Default Investor Share", f"{config['investor_share']*100:.1f}%")
         
-        # Monthly Capital Configuration
-        st.subheader("💰 Monthly Capital Configuration")
-        st.markdown("Set the total capital invested for each month. This overrides the default calculation based on client capital.")
+        # Monthly Capital Management
+        st.subheader("💰 Monthly Capital Management")
+        st.markdown("Set total capital for specific months. If not set, system will calculate based on client capital.")
         
         with st.form("monthly_capital_config"):
             col1, col2 = st.columns(2)
@@ -982,46 +982,46 @@ def admin_configuration_page():
                     step=1000.0,
                     key="monthly_capital_amount"
                 )
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.form_submit_button("Set Monthly Capital"):
-            if capital_amount > 0:
-                # Add or update monthly capital
-                success = data_manager.set_monthly_capital(month_year, capital_amount)
-                if success:
-                    st.success(f"Monthly capital set to ${capital_amount:,.2f} for {month_year}")
-                    st.rerun()
-                else:
-                    st.error("Failed to set monthly capital")
-            else:
-                st.error("Please enter a valid capital amount")
-    
-    with col2:
-        if st.form_submit_button("Delete Monthly Capital"):
-            if current_capital > 0:
-                # Delete monthly capital entry
-                success = data_manager.delete_monthly_capital(month_year)
-                if success:
-                    st.success(f"Monthly capital deleted for {month_year}")
-                    st.rerun()
-                else:
-                    st.error("Failed to delete monthly capital")
-            else:
-                st.error("No capital set for this month")
-    
-    with col3:
-        if st.form_submit_button("Reset to Default"):
-            if current_capital > 0:
-                # Delete monthly capital entry to use default calculation
-                success = data_manager.delete_monthly_capital(month_year)
-                if success:
-                    st.success(f"Monthly capital reset to default calculation for {month_year}")
-                    st.rerun()
-                else:
-                    st.error("Failed to reset monthly capital")
-            else:
-                st.info("Already using default calculation")
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                if st.form_submit_button("Set Monthly Capital"):
+                    if capital_amount > 0:
+                        # Add or update monthly capital
+                        success = data_manager.set_monthly_capital(month_year, capital_amount)
+                        if success:
+                            st.success(f"Monthly capital set to ${capital_amount:,.2f} for {month_year}")
+                            st.rerun()
+                        else:
+                            st.error("Failed to set monthly capital")
+                    else:
+                        st.error("Please enter a valid capital amount")
+            
+            with col2:
+                if st.form_submit_button("Delete Monthly Capital"):
+                    if current_capital > 0:
+                        # Delete monthly capital entry
+                        success = data_manager.delete_monthly_capital(month_year)
+                        if success:
+                            st.success(f"Monthly capital deleted for {month_year}")
+                            st.rerun()
+                        else:
+                            st.error("Failed to delete monthly capital")
+                    else:
+                        st.error("No capital set for this month")
+            
+            with col3:
+                if st.form_submit_button("Reset to Default"):
+                    if current_capital > 0:
+                        # Delete monthly capital entry to use default calculation
+                        success = data_manager.delete_monthly_capital(month_year)
+                        if success:
+                            st.success(f"Monthly capital reset to default calculation for {month_year}")
+                            st.rerun()
+                        else:
+                            st.error("Failed to reset monthly capital")
+                    else:
+                        st.info("Already using default calculation")
         
         # Show current monthly capital settings
         if not data_manager.monthly_capital_df.empty:
@@ -1042,99 +1042,97 @@ def admin_configuration_page():
         
         if not available_clients:
             st.warning("No clients available. Please add clients first.")
-            return
-        
-        selected_client = st.selectbox(
-            "Select Client",
-            available_clients,
-            key="client_selection"
-        )
-        
-        if selected_client:
-            # Get client info for display
-            client_info = data_manager.clients_df[data_manager.clients_df['client_id'] == selected_client].iloc[0]
-            st.markdown(f"**Configuring settings for:** {client_info['name']} ({selected_client})")
+        else:
+            selected_client = st.selectbox(
+                "Select Client",
+                available_clients,
+                key="client_selection"
+            )
             
-            # Get client-specific configuration
-            client_config = data_manager.get_config(selected_client)
-            
-            with st.form("update_client_config"):
-                col1, col2 = st.columns(2)
-    
-    with col1:
-                    tax_rate = st.slider(
-                        "Tax Rate (%)",
-                        min_value=0.0,
-                        max_value=50.0,
-                        value=client_config['tax_rate'] * 100,
-                        step=1.0,
-                        key="client_tax_rate"
-                    )
-    
-    with col2:
-                    trader_share = st.slider(
-                        "Trader Share (%)",
-                        min_value=0.0,
-                        max_value=100.0,
-                        value=client_config['trader_share'] * 100,
-                        step=5.0,
-                        key="client_trader_share"
-                    )
-                
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        if st.form_submit_button("Update Client Configuration"):
-                            success = data_manager.update_config(
-                                tax_rate / 100, trader_share / 100, selected_client
+            if selected_client:
+                # Get client info
+                client_info = data_manager.get_client_info(selected_client)
+                if client_info:
+                    st.subheader(f"⚙️ Configuration for {client_info['name']}")
+                    
+                    # Get current client configuration
+                    client_config = data_manager.get_client_config(selected_client)
+                    
+                    with st.form("update_client_config"):
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            tax_rate = st.slider(
+                                "Tax Rate (%)",
+                                min_value=0.0,
+                                max_value=50.0,
+                                value=client_config['tax_rate'] * 100,
+                                step=1.0,
+                                key="client_tax_rate"
                             )
-                            if success:
-                                st.success(f"Configuration updated successfully for {client_info['name']}!")
-                                st.rerun()
-                            else:
-                                st.error("Failed to update client configuration")
-                
+                        
+                        with col2:
+                            trader_share = st.slider(
+                                "Trader Share (%)",
+                                min_value=0.0,
+                                max_value=100.0,
+                                value=client_config['trader_share'] * 100,
+                                step=5.0,
+                                key="client_trader_share"
+                            )
+                        
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            if st.form_submit_button("Update Client Configuration"):
+                                success = data_manager.update_config(
+                                    tax_rate / 100, trader_share / 100, selected_client
+                                )
+                                if success:
+                                    st.success(f"Configuration updated successfully for {client_info['name']}!")
+                                    st.rerun()
+                                else:
+                                    st.error("Failed to update client configuration")
+                        
+                        with col2:
+                            if st.form_submit_button("Reset to Global Settings"):
+                                # Remove client-specific config to use global defaults
+                                if selected_client in data_manager.config.get('clients', {}):
+                                    del data_manager.config['clients'][selected_client]
+                                    data_manager._save_config()
+                                    st.success(f"Reset to global settings for {client_info['name']}!")
+                                    st.rerun()
+                    
+                    # Display current client configuration
+                    st.subheader(f"📋 Current Configuration for {client_info['name']}")
+                    col1, col2, col3 = st.columns(3)
+                    
+                    with col1:
+                        st.metric("Tax Rate", f"{client_config['tax_rate']*100:.1f}%")
+                    
                     with col2:
-                        if st.form_submit_button("Reset to Global Settings"):
-                            # Remove client-specific config to use global defaults
-                            if selected_client in data_manager.config.get('clients', {}):
-                                del data_manager.config['clients'][selected_client]
-                                data_manager._save_config()
-                                st.success(f"Reset to global settings for {client_info['name']}!")
-                                st.rerun()
-            
-            # Display current client configuration
-            st.subheader(f"📋 Current Configuration for {client_info['name']}")
-            col1, col2, col3 = st.columns(3)
-    
-            with col1:
-                st.metric("Tax Rate", f"{client_config['tax_rate']*100:.1f}%")
-    
-            with col2:
-                st.metric("Trader Share", f"{client_config['trader_share']*100:.1f}%")
-    
-            with col3:
-                st.metric("Investor Share", f"{client_config['investor_share']*100:.1f}%")
-            
-            # Show if using global or custom settings
-            client_configs = data_manager.get_all_client_configs()
-            if selected_client in client_configs:
-                st.info("🔧 Using custom configuration for this client")
-            else:
-                st.info("🌐 Using global default configuration")
+                        st.metric("Trader Share", f"{client_config['trader_share']*100:.1f}%")
+                    
+                    with col3:
+                        st.metric("Investor Share", f"{client_config['investor_share']*100:.1f}%")
+                    
+                    # Show if using global or custom settings
+                    client_configs = data_manager.get_all_client_configs()
+                    if selected_client in client_configs:
+                        st.info("🔧 Using custom configuration for this client")
+                    else:
+                        st.info("🌐 Using global default configuration")
     
     # Summary of all client configurations
     st.subheader("📊 Configuration Summary")
     client_configs = data_manager.get_all_client_configs()
     
     if client_configs:
-        # Create a summary DataFrame
         summary_data = []
         for client_id, config in client_configs.items():
-            client_info = data_manager.clients_df[data_manager.clients_df['client_id'] == client_id]
-            if not client_info.empty:
-                client_name = client_info.iloc[0]['name']
+            client_info = data_manager.get_client_info(client_id)
+            if client_info:
                 summary_data.append({
-                    'Client': f"{client_name} ({client_id})",
+                    'Client': client_info['name'],
                     'Tax Rate': f"{config['tax_rate']*100:.1f}%",
                     'Trader Share': f"{config['trader_share']*100:.1f}%",
                     'Investor Share': f"{config['investor_share']*100:.1f}%"
@@ -1449,7 +1447,7 @@ def client_capital_account_page():
                     )
                     
                     st.plotly_chart(fig1, use_container_width=True)
-        else:
+                else:
                     # Fallback to monthly view if no biweekly data
                     st.write("**Monthly Capital Growth (Normalized to Starting Capital)**")
                     
@@ -1491,11 +1489,8 @@ def client_capital_account_page():
                     )
                     
                     st.plotly_chart(fig, use_container_width=True)
-            
             else:
-                st.info("No capital progression data available yet.")
-        else:
-            st.error("Unable to load capital account information.")
+                st.error("Unable to load capital account information.")
 
 def client_strategy_summary_page():
     """Client page for viewing strategy analysis - redirects to admin strategy analysis"""
