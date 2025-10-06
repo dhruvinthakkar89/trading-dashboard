@@ -328,6 +328,18 @@ def admin_upload_trades_page():
     st.title("📊 Upload Trade Log")
     st.markdown("Upload your trade log to calculate strategy performance and client returns.")
     
+    # Refresh button
+    col1, col2, col3 = st.columns([1, 1, 4])
+    with col1:
+        if st.button("🔄 Refresh Data", help="Reload all data from files"):
+            if hasattr(st.session_state.data_manager, 'refresh_data'):
+                st.session_state.data_manager.refresh_data()
+            else:
+                from models import TradingDataManager
+                st.session_state.data_manager = TradingDataManager()
+            st.success("Data refreshed successfully!")
+            st.rerun()
+    
     # File upload
     uploaded_file = st.file_uploader(
         "Choose a trade log file",
@@ -371,6 +383,19 @@ def admin_manage_clients_page():
     
     st.title("👥 Manage Clients")
     st.markdown("Create, edit, and manage client accounts.")
+    
+    # Refresh button
+    col1, col2, col3 = st.columns([1, 1, 4])
+    with col1:
+        if st.button("🔄 Refresh Data", help="Reload all data from files"):
+            if hasattr(st.session_state.data_manager, 'refresh_data'):
+                st.session_state.data_manager.refresh_data()
+            else:
+                # Recreate data manager if refresh_data method doesn't exist
+                from models import TradingDataManager
+                st.session_state.data_manager = TradingDataManager()
+            st.success("Data refreshed successfully!")
+            st.rerun()
     
     # Create new client
     st.subheader("➕ Create New Client")
@@ -594,6 +619,18 @@ def admin_capital_movements_page():
     st.title("💰 Capital Movements")
     st.markdown("Manage client contributions and withdrawals.")
     
+    # Refresh button
+    col1, col2, col3 = st.columns([1, 1, 4])
+    with col1:
+        if st.button("🔄 Refresh Data", help="Reload all data from files"):
+            if hasattr(st.session_state.data_manager, 'refresh_data'):
+                st.session_state.data_manager.refresh_data()
+            else:
+                from models import TradingDataManager
+                st.session_state.data_manager = TradingDataManager()
+            st.success("Data refreshed successfully!")
+            st.rerun()
+    
     # Add capital movement
     st.subheader("➕ Add Capital Movement")
     
@@ -636,6 +673,18 @@ def admin_capital_accounts_page():
     
     st.title("🏦 Capital Accounts")
     st.markdown("View capital progression, contributions, withdrawals, and returns for all clients.")
+    
+    # Refresh button
+    col1, col2, col3 = st.columns([1, 1, 4])
+    with col1:
+        if st.button("🔄 Refresh Data", help="Reload all data from files"):
+            if hasattr(st.session_state.data_manager, 'refresh_data'):
+                st.session_state.data_manager.refresh_data()
+            else:
+                from models import TradingDataManager
+                st.session_state.data_manager = TradingDataManager()
+            st.success("Data refreshed successfully!")
+            st.rerun()
     
     data_manager = st.session_state.data_manager
     
@@ -1064,6 +1113,18 @@ def admin_strategy_analysis_page():
     
     st.title("📈 Strategy Analysis")
     st.markdown("Detailed analysis of trading strategy performance.")
+    
+    # Refresh button
+    col1, col2, col3 = st.columns([1, 1, 4])
+    with col1:
+        if st.button("🔄 Refresh Data", help="Reload all data from files"):
+            if hasattr(st.session_state.data_manager, 'refresh_data'):
+                st.session_state.data_manager.refresh_data()
+            else:
+                from models import TradingDataManager
+                st.session_state.data_manager = TradingDataManager()
+            st.success("Data refreshed successfully!")
+            st.rerun()
     
     data_manager = st.session_state.data_manager
     
