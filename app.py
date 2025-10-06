@@ -1265,11 +1265,11 @@ def admin_strategy_analysis_page():
             else:
                 # If S&P 500 data is not available, show original columns
                 display_columns = ['Month', 'Total_Trades', 'Win_Rate', 'Avg_Win_Pct', 'Avg_Loss_Pct', 'Return_Pct', 'Cumulative_Return']
-            monthly_display_df = monthly_returns[display_columns]
-            monthly_display_df = monthly_display_df.rename(columns={
-                'Return_Pct': 'Strategy_Return_Pct',
-                'Cumulative_Return': 'Strategy_Cumulative_Return'
-            })
+                monthly_display_df = monthly_returns[display_columns]
+                monthly_display_df = monthly_display_df.rename(columns={
+                    'Return_Pct': 'Strategy_Return_Pct',
+                    'Cumulative_Return': 'Strategy_Cumulative_Return'
+                })
             
             st.dataframe(monthly_display_df, use_container_width=True)
             
