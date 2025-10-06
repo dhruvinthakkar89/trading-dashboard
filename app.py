@@ -5,6 +5,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
+import time
 
 # Import authentication and data management
 from auth import init_auth, login_page, logout_button, require_auth
@@ -69,6 +70,21 @@ def main():
     # Initialize data manager
     if 'data_manager' not in st.session_state:
         st.session_state.data_manager = TradingDataManager()
+        st.session_state.last_data_refresh = 0
+    
+    # Always refresh data to ensure we have the latest from files
+    # This ensures all sessions see the same data
+    current_time = time.time()
+    
+    # Refresh data every 30 seconds or on first load
+    if current_time - st.session_state.last_data_refresh > 30:
+        try:
+            st.session_state.data_manager.refresh_data()
+            st.session_state.last_data_refresh = current_time
+        except Exception as e:
+            # If refresh fails, recreate the data manager
+            st.session_state.data_manager = TradingDataManager()
+            st.session_state.last_data_refresh = current_time
     
     # Display selected page
     if page_function == "admin_dashboard":
@@ -114,14 +130,18 @@ def admin_dashboard_page():
     col1, col2, col3 = st.columns([2, 1, 1])
     with col2:
         if st.button("🔄 Refresh Data", help="Reload all data from files"):
-            # Check if refresh_data method exists (for backward compatibility)
-            if hasattr(st.session_state.data_manager, 'refresh_data'):
+            try:
                 st.session_state.data_manager.refresh_data()
-            else:
-                # Fallback: recreate data manager to get latest methods
+                st.session_state.last_data_refresh = time.time()
+                st.success("Data refreshed successfully!")
+                st.rerun()
+            except Exception as e:
+                # If refresh fails, recreate the data manager
+                from models import TradingDataManager
                 st.session_state.data_manager = TradingDataManager()
-            st.success("Data refreshed successfully!")
-            st.rerun()
+                st.session_state.last_data_refresh = time.time()
+                st.success("Data refreshed successfully!")
+                st.rerun()
     
     with col3:
         if st.button("🗑️ Remove Problem Trades", help="Remove MSTR and COIN trades with high return percentages"):
@@ -332,13 +352,18 @@ def admin_upload_trades_page():
     col1, col2, col3 = st.columns([1, 1, 4])
     with col1:
         if st.button("🔄 Refresh Data", help="Reload all data from files"):
-            if hasattr(st.session_state.data_manager, 'refresh_data'):
+            try:
                 st.session_state.data_manager.refresh_data()
-            else:
+                st.session_state.last_data_refresh = time.time()
+                st.success("Data refreshed successfully!")
+                st.rerun()
+            except Exception as e:
+                # If refresh fails, recreate the data manager
                 from models import TradingDataManager
                 st.session_state.data_manager = TradingDataManager()
-            st.success("Data refreshed successfully!")
-            st.rerun()
+                st.session_state.last_data_refresh = time.time()
+                st.success("Data refreshed successfully!")
+                st.rerun()
     
     # File upload
     uploaded_file = st.file_uploader(
@@ -388,14 +413,18 @@ def admin_manage_clients_page():
     col1, col2, col3 = st.columns([1, 1, 4])
     with col1:
         if st.button("🔄 Refresh Data", help="Reload all data from files"):
-            if hasattr(st.session_state.data_manager, 'refresh_data'):
+            try:
                 st.session_state.data_manager.refresh_data()
-            else:
-                # Recreate data manager if refresh_data method doesn't exist
+                st.session_state.last_data_refresh = time.time()
+                st.success("Data refreshed successfully!")
+                st.rerun()
+            except Exception as e:
+                # If refresh fails, recreate the data manager
                 from models import TradingDataManager
                 st.session_state.data_manager = TradingDataManager()
-            st.success("Data refreshed successfully!")
-            st.rerun()
+                st.session_state.last_data_refresh = time.time()
+                st.success("Data refreshed successfully!")
+                st.rerun()
     
     # Create new client
     st.subheader("➕ Create New Client")
@@ -418,6 +447,8 @@ def admin_manage_clients_page():
                     username, password, name, email, starting_capital
                 )
                 if success:
+                    # Refresh data manager to sync with auth manager
+                    st.session_state.data_manager.refresh_data()
                     st.success(f"Client {username} created successfully!")
                     st.rerun()
                 else:
@@ -623,13 +654,18 @@ def admin_capital_movements_page():
     col1, col2, col3 = st.columns([1, 1, 4])
     with col1:
         if st.button("🔄 Refresh Data", help="Reload all data from files"):
-            if hasattr(st.session_state.data_manager, 'refresh_data'):
+            try:
                 st.session_state.data_manager.refresh_data()
-            else:
+                st.session_state.last_data_refresh = time.time()
+                st.success("Data refreshed successfully!")
+                st.rerun()
+            except Exception as e:
+                # If refresh fails, recreate the data manager
                 from models import TradingDataManager
                 st.session_state.data_manager = TradingDataManager()
-            st.success("Data refreshed successfully!")
-            st.rerun()
+                st.session_state.last_data_refresh = time.time()
+                st.success("Data refreshed successfully!")
+                st.rerun()
     
     # Add capital movement
     st.subheader("➕ Add Capital Movement")
@@ -678,13 +714,18 @@ def admin_capital_accounts_page():
     col1, col2, col3 = st.columns([1, 1, 4])
     with col1:
         if st.button("🔄 Refresh Data", help="Reload all data from files"):
-            if hasattr(st.session_state.data_manager, 'refresh_data'):
+            try:
                 st.session_state.data_manager.refresh_data()
-            else:
+                st.session_state.last_data_refresh = time.time()
+                st.success("Data refreshed successfully!")
+                st.rerun()
+            except Exception as e:
+                # If refresh fails, recreate the data manager
                 from models import TradingDataManager
                 st.session_state.data_manager = TradingDataManager()
-            st.success("Data refreshed successfully!")
-            st.rerun()
+                st.session_state.last_data_refresh = time.time()
+                st.success("Data refreshed successfully!")
+                st.rerun()
     
     data_manager = st.session_state.data_manager
     
@@ -750,10 +791,10 @@ def admin_capital_accounts_page():
                         monthly_df = pd.DataFrame(client_capital['monthly_breakdown'])
                         
                         # Create two separate simple charts if biweekly data is available
-                        if client_capital['biweekly_breakdown']:
+                    if client_capital['biweekly_breakdown']:
                             st.write("**Biweekly Performance Analysis**")
                             
-                            biweekly_df = pd.DataFrame(client_capital['biweekly_breakdown'])
+                        biweekly_df = pd.DataFrame(client_capital['biweekly_breakdown'])
                         
                             # Calculate cumulative profits (only from trading, not contributions)
                             # Profit for each period = ending_capital - capital_after_contributions
@@ -857,36 +898,36 @@ def admin_configuration_page():
         config = data_manager.get_config()
         
         with st.form("update_global_config"):
-            col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2)
         
-            with col1:
-                tax_rate = st.slider(
+        with col1:
+            tax_rate = st.slider(
                     "Default Tax Rate (%)",
-                    min_value=0.0,
-                    max_value=50.0,
-                    value=config['tax_rate'] * 100,
+                min_value=0.0,
+                max_value=50.0,
+                value=config['tax_rate'] * 100,
                     step=1.0,
                     key="global_tax_rate"
-                )
-            
-            with col2:
-                trader_share = st.slider(
+            )
+        
+        with col2:
+            trader_share = st.slider(
                     "Default Trader Share (%)",
-                    min_value=0.0,
-                    max_value=100.0,
-                    value=config['trader_share'] * 100,
+                min_value=0.0,
+                max_value=100.0,
+                value=config['trader_share'] * 100,
                     step=5.0,
                     key="global_trader_share"
-                )
-            
+            )
+        
             if st.form_submit_button("Update Global Configuration"):
                 success = data_manager.update_config(
-                    tax_rate / 100, trader_share / 100
-                )
-                if success:
+                tax_rate / 100, trader_share / 100
+            )
+            if success:
                     st.success("Global configuration updated successfully!")
-                    st.rerun()
-                else:
+                st.rerun()
+            else:
                     st.error("Failed to update global configuration")
         
         # Display current global configuration
@@ -941,8 +982,8 @@ def admin_configuration_page():
                     step=1000.0,
                     key="monthly_capital_amount"
                 )
-            
-            col1, col2, col3 = st.columns(3)
+    
+    col1, col2, col3 = st.columns(3)
             with col1:
                 if st.form_submit_button("Set Monthly Capital"):
                     if capital_amount > 0:
@@ -1019,8 +1060,8 @@ def admin_configuration_page():
             
             with st.form("update_client_config"):
                 col1, col2 = st.columns(2)
-                
-                with col1:
+    
+    with col1:
                     tax_rate = st.slider(
                         "Tax Rate (%)",
                         min_value=0.0,
@@ -1029,8 +1070,8 @@ def admin_configuration_page():
                         step=1.0,
                         key="client_tax_rate"
                     )
-                
-                with col2:
+    
+    with col2:
                     trader_share = st.slider(
                         "Trader Share (%)",
                         min_value=0.0,
@@ -1070,8 +1111,8 @@ def admin_configuration_page():
     
             with col2:
                 st.metric("Trader Share", f"{client_config['trader_share']*100:.1f}%")
-            
-            with col3:
+    
+    with col3:
                 st.metric("Investor Share", f"{client_config['investor_share']*100:.1f}%")
             
             # Show if using global or custom settings
@@ -1118,13 +1159,18 @@ def admin_strategy_analysis_page():
     col1, col2, col3 = st.columns([1, 1, 4])
     with col1:
         if st.button("🔄 Refresh Data", help="Reload all data from files"):
-            if hasattr(st.session_state.data_manager, 'refresh_data'):
+            try:
                 st.session_state.data_manager.refresh_data()
-            else:
+                st.session_state.last_data_refresh = time.time()
+                st.success("Data refreshed successfully!")
+                st.rerun()
+            except Exception as e:
+                # If refresh fails, recreate the data manager
                 from models import TradingDataManager
                 st.session_state.data_manager = TradingDataManager()
-            st.success("Data refreshed successfully!")
-            st.rerun()
+                st.session_state.last_data_refresh = time.time()
+                st.success("Data refreshed successfully!")
+                st.rerun()
     
     data_manager = st.session_state.data_manager
     
@@ -1221,7 +1267,7 @@ def admin_strategy_analysis_page():
             else:
                 # If S&P 500 data is not available, show original columns
                 display_columns = ['Month', 'Total_Trades', 'Win_Rate', 'Avg_Win_Pct', 'Avg_Loss_Pct', 'Return_Pct', 'Cumulative_Return']
-                monthly_display_df = monthly_returns[display_columns]
+            monthly_display_df = monthly_returns[display_columns]
                 monthly_display_df = monthly_display_df.rename(columns={
                     'Return_Pct': 'Strategy_Return_Pct',
                     'Cumulative_Return': 'Strategy_Cumulative_Return'
@@ -1270,15 +1316,15 @@ def admin_strategy_analysis_page():
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 # Fallback to strategy-only chart if S&P 500 data is not available
-                fig = px.line(
-                    monthly_returns,
-                    x='Month',
-                    y='Return_Pct',
-                    title="Monthly Strategy Returns (%)",
-                    markers=True,
-                    line_shape='spline'
-                )
-                st.plotly_chart(fig, use_container_width=True)
+            fig = px.line(
+                monthly_returns,
+                x='Month',
+                y='Return_Pct',
+                title="Monthly Strategy Returns (%)",
+                markers=True,
+                line_shape='spline'
+            )
+            st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("No trades uploaded yet. Please upload a trade log first.")
 
@@ -1294,14 +1340,18 @@ def client_capital_account_page():
     col1, col2 = st.columns([3, 1])
     with col2:
         if st.button("🔄 Refresh Data", help="Reload all data from files"):
-            # Check if refresh_data method exists (for backward compatibility)
-            if hasattr(st.session_state.data_manager, 'refresh_data'):
+            try:
                 st.session_state.data_manager.refresh_data()
-            else:
-                # Fallback: recreate data manager to get latest methods
+                st.session_state.last_data_refresh = time.time()
+                st.success("Data refreshed successfully!")
+                st.rerun()
+            except Exception as e:
+                # If refresh fails, recreate the data manager
+                from models import TradingDataManager
                 st.session_state.data_manager = TradingDataManager()
-            st.success("Data refreshed successfully!")
-            st.rerun()
+                st.session_state.last_data_refresh = time.time()
+                st.success("Data refreshed successfully!")
+                st.rerun()
     
     user_info = st.session_state.user_info
     data_manager = st.session_state.data_manager
@@ -1365,11 +1415,11 @@ def client_capital_account_page():
                 monthly_df = pd.DataFrame(client_capital['monthly_breakdown'])
                 
                 # Create two separate simple charts if biweekly data is available
-                if client_capital['biweekly_breakdown']:
+            if client_capital['biweekly_breakdown']:
                     st.write("**Biweekly Performance Analysis**")
                     
-                    biweekly_df = pd.DataFrame(client_capital['biweekly_breakdown'])
-                    
+                biweekly_df = pd.DataFrame(client_capital['biweekly_breakdown'])
+                
                     # Calculate cumulative profits (only from trading, not contributions)
                     # Profit for each period = ending_capital - capital_after_contributions
                     biweekly_df['period_profit'] = biweekly_df['ending_capital'] - biweekly_df['capital_after_contributions']
@@ -1399,7 +1449,7 @@ def client_capital_account_page():
                     )
                     
                     st.plotly_chart(fig1, use_container_width=True)
-                else:
+        else:
                     # Fallback to monthly view if no biweekly data
                     st.write("**Monthly Capital Growth (Normalized to Starting Capital)**")
                     
@@ -1440,9 +1490,9 @@ def client_capital_account_page():
                         legend=dict(x=0.02, y=0.98)
                     )
                     
-                    st.plotly_chart(fig, use_container_width=True)
-                
-        else:
+            st.plotly_chart(fig, use_container_width=True)
+            
+    else:
             st.info("No capital progression data available yet.")
     else:
         st.error("Unable to load capital account information.")
